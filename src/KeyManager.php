@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Apex\Armor\SshKeys;
 
 use Apex\Armor\Armor;
+use Apex\Armor\SshKeys\PrivateToPublicSsh;
 use Apex\Container\Di;
 use Apex\Db\Interfaces\DbInterface;
 use Apex\Armor\Exceptions\{ArmorDuplicateKeyException, ArmorInvalidKeyPasswordException, ArmorUuidNotExistsException};
@@ -72,27 +73,7 @@ class KeyManager
      */
     public function privateToSshPublic($privkey)
     {
-
-        $keyInfo = openssl_pkey_get_details($privkey);
-        $buffer = pack("N", 7) . "ssh-rsa" .
-            $this->sshEncodeBuffer($keyInfo['rsa']['e']) . 
-            $this->sshEncodeBuffer($keyInfo['rsa']['n']);
-
-        // Return
-        return "ssh-rsa " . base64_encode($buffer);
-    }
-
-    /**
-     * Encode SSH buffer
-     */
-    public function sshEncodeBuffer($buffer) 
-    {
-        $len = strlen($buffer);
-        if (ord($buffer[0]) & 0x80) {
-            $len++;
-            $buffer = "\x00" . $buffer;
-        }
-        return pack("Na*", $len, $buffer);
+        return PrivateToPublicSsh::get($privkey);
     }
 
     /**

@@ -77,16 +77,28 @@ class KeyManager
     }
 
     /**
+     * Public key to SHA256 fingerprint / hash
+     */
+    public function publicToFingerprint(string $public_key):string
+    {
+        $parts = explode(' ', $public_key);
+        $hash = hash('sha256', base64_decode($parts[1]), true);
+        return preg_replace("/=*$/", "", base64_encode($hash));
+    }
+
+    /**
      * Import public key
      */
     public function import(string $uuid, string $public_key):void
     {
 
+
             // Add to db
         $this->db->insert('armor_keys', [
             'uuid' => $uuid, 
             'algo' => 'ssh', 
-            'public_key' => $public_key
+            'public_key' => $public_key,
+            'fingerprint' => $this->publicToFingerprint($public_key)
         ]);
 
     }
